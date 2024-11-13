@@ -16,6 +16,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/nyaruka/courier"
 	"github.com/nyaruka/courier/batch"
+	"github.com/nyaruka/courier/newstorage"
 	"github.com/nyaruka/courier/queue"
 	"github.com/nyaruka/courier/utils"
 	"github.com/nyaruka/gocommon/analytics"
@@ -672,7 +673,7 @@ func (b *backend) Start() error {
 		}
 		b.storage = storage.NewS3(s3Client, b.config.S3MediaBucket, b.config.S3Region, 32)
 	} else {
-		b.storage = storage.NewFS("_storage")
+		b.newstorage = newstorage.NewFS("_storage")
 	}
 
 	// test our storage
@@ -800,9 +801,10 @@ type backend struct {
 	logCommitter    batch.Committer
 	committerWG     *sync.WaitGroup
 
-	db        *sqlx.DB
-	redisPool *redis.Pool
-	storage   storage.Storage
+	db         *sqlx.DB
+	redisPool  *redis.Pool
+	storage    storage.Storage
+	newstorage newstorage.Storage
 
 	stopChan  chan bool
 	waitGroup *sync.WaitGroup
