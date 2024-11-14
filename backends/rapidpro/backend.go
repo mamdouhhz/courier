@@ -21,7 +21,6 @@ import (
 	"github.com/nyaruka/courier/utils"
 	"github.com/nyaruka/gocommon/analytics"
 	"github.com/nyaruka/gocommon/dbutil"
-	"github.com/nyaruka/gocommon/storage"
 	"github.com/nyaruka/gocommon/urns"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -659,7 +658,7 @@ func (b *backend) Start() error {
 
 	// create our storage (S3 or file system)
 	if b.config.AWSAccessKeyID != "" {
-		s3Client, err := storage.NewS3Client(&storage.S3Options{
+		s3Client, err := newstorage.NewS3Client(&newstorage.S3Options{
 			AWSAccessKeyID:     b.config.AWSAccessKeyID,
 			AWSSecretAccessKey: b.config.AWSSecretAccessKey,
 			Endpoint:           b.config.S3Endpoint,
@@ -671,9 +670,9 @@ func (b *backend) Start() error {
 		if err != nil {
 			return err
 		}
-		b.storage = storage.NewS3(s3Client, b.config.S3MediaBucket, b.config.S3Region, 32)
+		b.storage = newstorage.NewS3(s3Client, b.config.S3MediaBucket, b.config.S3Region, 32)
 	} else {
-		b.newstorage = newstorage.NewFS("_storage")
+		b.storage = newstorage.NewFS("_storage")
 	}
 
 	// test our storage
@@ -803,8 +802,7 @@ type backend struct {
 
 	db         *sqlx.DB
 	redisPool  *redis.Pool
-	storage    storage.Storage
-	newstorage newstorage.Storage
+	storage    newstorage.Storage
 
 	stopChan  chan bool
 	waitGroup *sync.WaitGroup
